@@ -1,0 +1,52 @@
+<mat-dialog-content>
+  <mat-toolbar>
+    <span>Nueva Habitación</span>
+  </mat-toolbar>
+
+  <div class="room-dialog-container">
+    <mat-form-field>
+      <mat-label>Número de Habitación</mat-label>
+      <input matInput placeholder="Número" [(ngModel)]="room.number" required
+             [ngClass]="{'invalid': !room.number}">
+      @if (!room.number) {
+        <mat-error>El número de habitación es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Tipo de Habitación</mat-label>
+      <mat-select
+        [(ngModel)]="room.type"
+        required
+        [ngClass]="{'invalid': !room.type}">
+        @for (type of roomTypes; track type) {
+          <mat-option [value]="type">{{type}}</mat-option>
+        }
+      </mat-select>
+      @if (!room.type) {
+        <mat-error>Debe seleccionar un tipo de habitación</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Precio</mat-label>
+      <input matInput type="number" placeholder="Precio" [(ngModel)]="room.price" required
+             [ngClass]="{'invalid': room.price <= 0}">
+      @if (room.price <= 0) {
+        <mat-error>El precio debe ser mayor que cero</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-slide-toggle [(ngModel)]="room.available">
+      Disponible
+    </mat-slide-toggle>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-button (click)="close()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="create()"
+            [disabled]="!isFormValid()">
+      Crear
+    </button>
+  </div>
+</mat-dialog-content>

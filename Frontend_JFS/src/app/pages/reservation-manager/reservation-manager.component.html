@@ -1,0 +1,75 @@
+<div class="container">
+  <mat-toolbar color="primary">
+    <div fxLayout="row" fxLayoutAlign="space-between center" style="width: 100%;">
+      <span>Administrador de Reservaciones</span>
+    <span class="spacer"></span>
+    <button mat-raised-button color="accent" (click)="openDialog()">
+      <mat-icon>add</mat-icon> Nueva Reservación
+    </button>
+  </div>
+
+  </mat-toolbar>
+
+  <mat-card class="main-card">
+    <mat-card-content>
+      <!-- Loading state -->
+      <div *ngIf="isLoading" class="loading-center">
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!isLoading && reservations.length === 0" class="empty-state">
+        <mat-icon>event_available</mat-icon>
+        <h3>No hay reservaciones registradas</h3>
+      </div>
+
+      <!-- Reservations table -->
+      <table *ngIf="!isLoading && reservations.length > 0" mat-table [dataSource]="reservations" class="reservations-table">
+        <!-- Customer Name Column -->
+        <ng-container matColumnDef="customerName">
+          <th mat-header-cell *matHeaderCellDef> Cliente </th>
+          <td mat-cell *matCellDef="let reservation">
+            <mat-icon>person</mat-icon> {{reservation.customerName}}
+          </td>
+        </ng-container>
+
+        <!-- Room ID Column -->
+        <ng-container matColumnDef="roomId">
+          <th mat-header-cell *matHeaderCellDef> Habitación </th>
+          <td mat-cell *matCellDef="let reservation">
+            <mat-icon>meeting_room</mat-icon> {{reservation.roomId}}
+          </td>
+        </ng-container>
+
+        <!-- Check-in Date Column -->
+        <ng-container matColumnDef="checkInDate">
+          <th mat-header-cell *matHeaderCellDef> Check-in </th>
+          <td mat-cell *matCellDef="let reservation">
+            <mat-icon>event</mat-icon> {{formatDate(reservation.checkInDate)}}
+          </td>
+        </ng-container>
+
+        <!-- Check-out Date Column -->
+        <ng-container matColumnDef="checkOutDate">
+          <th mat-header-cell *matHeaderCellDef> Check-out </th>
+          <td mat-cell *matCellDef="let reservation">
+            <mat-icon>event_available</mat-icon> {{formatDate(reservation.checkOutDate)}}
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Acciones </th>
+          <td mat-cell *matCellDef="let reservation">
+            <button mat-icon-button color="warn" (click)="deleteReservation(reservation.idReservation!)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>

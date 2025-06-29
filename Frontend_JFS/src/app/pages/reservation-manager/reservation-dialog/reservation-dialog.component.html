@@ -1,0 +1,82 @@
+<div class="reservation-dialog-container">
+  <h2 mat-dialog-title>Nueva Reservación</h2>
+
+  <mat-dialog-content>
+    <mat-form-field appearance="outline">
+      <mat-label>Rango de Fechas</mat-label>
+      <mat-date-range-input
+      [rangePicker]="picker"
+      [min]="minDate">
+      <input
+        matStartDate
+        placeholder="Fecha de Entrada"
+        [(ngModel)]="reservation.checkInDate"
+        (dateChange)="onDateRangeChange()"
+        required>
+      <input
+        matEndDate
+        placeholder="Fecha de Salida"
+        [(ngModel)]="reservation.checkOutDate"
+        (dateChange)="onDateRangeChange()"
+        required>
+    </mat-date-range-input>
+
+      <mat-hint>Seleccione fechas de reserva</mat-hint>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-date-range-picker
+        #picker
+        [startAt]="minDate">
+      </mat-date-range-picker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre del Cliente</mat-label>
+      <input
+        matInput
+        placeholder="Nombre completo"
+        [(ngModel)]="reservation.customerName"
+        required>
+      <mat-hint *ngIf="!areDatesSelected" class="text-red-500">
+        Primero debe seleccionar un rango de fechas
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Habitaciones Disponibles</mat-label>
+      <mat-select
+        [(ngModel)]="reservation.roomId"
+        required>
+        @if (isLoading) {
+          <mat-option disabled>Cargando habitaciones...</mat-option>
+        }
+        @if (!isLoading && availableRooms.length === 0) {
+          <mat-option disabled>No hay habitaciones disponibles en ese rango</mat-option>
+        }
+        @for (room of availableRooms; track room.idRoom) {
+          <mat-option [value]="room.idRoom">
+            Habitación {{room.number}} - {{room.type}} (${{room.price | number}})
+          </mat-option>
+        }
+      </mat-select>
+      <mat-hint *ngIf="!areDatesSelected" class="text-red-500">
+        Primero debe seleccionar un rango de fechas
+      </mat-hint>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button
+      mat-button
+      (click)="onCancel()"
+      [disabled]="isLoading">
+      Cancelar
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onSubmit()"
+      [disabled]="!isFormComplete()">
+      Crear Reservación
+    </button>
+  </mat-dialog-actions>
+</div>

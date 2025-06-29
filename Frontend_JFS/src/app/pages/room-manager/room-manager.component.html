@@ -1,0 +1,79 @@
+<div class="container">
+  <mat-toolbar color="primary">
+    <div fxLayout="row" fxLayoutAlign="space-between center" style="width: 100%;">
+      <span>Administrador de Habitaciones</span>
+      <button mat-raised-button color="accent" (click)="openDialog()">
+        <mat-icon>add</mat-icon> Nueva Habitación
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <mat-card class="main-card">
+    <mat-card-content>
+      @if (isLoading) {
+        <div class="loading-center">
+          <mat-spinner diameter="50"></mat-spinner>
+        </div>
+      } @else if (rooms.length === 0) {
+        <div class="empty-state">
+          <mat-icon>meeting_room</mat-icon>
+          <h3>No hay habitaciones registradas</h3>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="dataSource" matSort class="rooms-table">
+          <!-- Columna Número con ordenamiento -->
+          <ng-container matColumnDef="number">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="number">Número</th>
+            <td mat-cell *matCellDef="let room">
+              <mat-icon>meeting_room</mat-icon> {{room.number}}
+            </td>
+          </ng-container>
+
+          <!-- Columna Tipo con ordenamiento -->
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="type">Tipo</th>
+            <td mat-cell *matCellDef="let room">
+              <span [class]="'room-type-' + room.type.toLowerCase()">
+                {{room.type}}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Columna Precio con ordenamiento -->
+          <ng-container matColumnDef="price">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="price">Precio</th>
+            <td mat-cell *matCellDef="let room">
+              <span class="price">{{room.price | currency}}</span>
+            </td>
+          </ng-container>
+
+          <!-- Columna Disponible con ordenamiento -->
+          <ng-container matColumnDef="available">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="available">Disponible</th>
+            <td mat-cell *matCellDef="let room">
+              <mat-slide-toggle
+                [checked]="room.available"
+                (change)="toggleAvailability(room)"
+                color="primary">
+                {{room.available ? 'Sí' : 'No'}}
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <!-- Columna Acciones -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Eliminar</th>
+            <td mat-cell *matCellDef="let room">
+              <button mat-icon-button color="warn" (click)="deleteRoom(room.idRoom)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
