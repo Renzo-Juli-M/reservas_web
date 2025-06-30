@@ -1,0 +1,41 @@
+<h2>Bienvenido al panel de tu hotel 🏨</h2>
+
+<div class="cards-container" *ngIf="stats as s; else loading">
+  <div class="card kpi kpi-reservas">
+    <div class="icon">📆</div>
+    <div class="content">
+      <h3>Reservas Totales</h3>
+      <p>{{ s.totalReservations }}</p>
+    </div>
+  </div>
+
+  <div class="card kpi kpi-ocupacion">
+    <div class="icon">📊</div>
+    <div class="content">
+      <h3>Ocupación</h3>
+      <p>{{ s.occupancyRate | number: '1.0-2' }}%</p>
+    </div>
+  </div>
+
+  <div class="card kpi kpi-ingresos">
+    <div class="icon">💰</div>
+    <div class="content">
+      <h3>Ingresos</h3>
+      <p>{{ s.totalRevenue | currency: 'USD' }}</p>
+    </div>
+  </div>
+
+  <div class="card kpi kpi-habs">
+    <div class="icon">🛏️</div>
+    <div class="content">
+      <h3>Habitaciones Activas</h3>
+      <p>{{ s.occupiedRooms }} / {{ s.totalRooms }}</p>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:2rem;">📈 Reservas recientes</h3>
+<app-grafico-reservas [labels]="labels" [data]="series" />
+<ng-template #loading>
+  <p>Cargando estadísticas...</p>
+</ng-template>

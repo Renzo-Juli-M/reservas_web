@@ -1,0 +1,42 @@
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.icon {
+  font-size: 2rem;
+}
+
+.content h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #444;
+}
+
+.content p {
+  margin: 0.2rem 0 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.kpi-reservas { border-left: 5px solid #3f51b5; }
+.kpi-ocupacion { border-left: 5px solid #00acc1; }
+.kpi-ingresos { border-left: 5px solid #4caf50; }
+.kpi-habs { border-left: 5px solid #ff9800; }

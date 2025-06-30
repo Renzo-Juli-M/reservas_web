@@ -1,11 +1,8 @@
 package com.back.model;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
@@ -22,19 +19,17 @@ public class Room {
     @Column(nullable = false, length = 20, unique = true)
     private String number;
 
+    @Column(name = "entrepreneur_id")
+    private Integer entrepreneurId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RoomType type;
 
-//    @Column(nullable = false, precision = 10, scale = 2)
-    @Column(nullable = false)
-    private Double price;
+    /** Precio por noche */
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
     @Column(nullable = false)
     private Boolean available;
-    
-//    @OneToMany
-//    @JoinColumn(name = "roomId", referencedColumnName = "idRoom")
-//    private List<Reservation> reservations;
-
 }

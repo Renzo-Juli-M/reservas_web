@@ -2,9 +2,8 @@ package com.back.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @AllArgsConstructor
@@ -21,6 +20,9 @@ public class Reservation {
     @Column(nullable = false, length = 100)
     private String customerName;
 
+    @Column(name = "entrepreneur_id")
+    private Integer entrepreneurId;
+
     @Column(nullable = false)
     private LocalDate checkInDate;
 
@@ -29,4 +31,8 @@ public class Reservation {
 
     @Column(name = "room_id", nullable = false)
     private Integer roomId;
+
+    /** Precio total calculado: price * noches */
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalPrice;
 }

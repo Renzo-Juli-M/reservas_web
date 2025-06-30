@@ -1,23 +1,19 @@
 package com.back.service.impl;
 
-import java.time.LocalDate;
-
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.stereotype.Service;
-
 import com.back.exception.ModelNotFoundException;
 import com.back.model.Room;
-import com.back.repo.IGenericRepo;
-import com.back.repo.IReservationRepo;
-import com.back.repo.IRoomRepo;
+import com.back.repo.*;
 import com.back.service.IRoomService;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
-public class RoomServiceImpl extends CRUDImpl<Room, Integer> implements IRoomService {
+public class RoomServiceImpl extends CRUDImpl<Room, Integer>
+        implements IRoomService {
 
     private final IRoomRepo repo;
     private final IReservationRepo reservationRepo;
@@ -27,19 +23,20 @@ public class RoomServiceImpl extends CRUDImpl<Room, Integer> implements IRoomSer
         return repo;
     }
 
+    /** Actualiza solo disponibilidad */
+    @Override
     @Transactional
-    @Modifying
     public Room updateAvailability(Integer id, boolean available) throws Exception {
         Room room = repo.findById(id)
-            .orElseThrow(() -> new ModelNotFoundException("ID NOT FOUND: " + id));
-
-        if (!room.getAvailable() && available) {
-            reservationRepo.deleteByRoomIdAndCheckOutDateBefore(id, LocalDate.now());
-        }
-
+                .orElseThrow(() -> new ModelNotFoundException("Room not found: " + id));
         repo.updateRoomAvailability(id, available);
-
         return repo.findById(id)
-            .orElseThrow(() -> new ModelNotFoundException("Error updating room"));
+                .orElseThrow(() -> new ModelNotFoundException("Error re-loading room"));
+    }
+
+    /** Métrica */
+    @Override
+    public Long countByEntrepreneur(Integer entrepreneurId) {
+        return repo.countByEntrepreneurId(entrepreneurId);
     }
 }

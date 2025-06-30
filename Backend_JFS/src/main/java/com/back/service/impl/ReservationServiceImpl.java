@@ -1,29 +1,28 @@
 package com.back.service.impl;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
+import com.back.dto.ReservasPorFechaDTO;
 import com.back.exception.ModelNotFoundException;
 import com.back.model.Reservation;
 import com.back.model.Room;
-import com.back.repo.IGenericRepo;
-import com.back.repo.IReservationRepo;
-import com.back.repo.IRoomRepo;
-import com.back.service.IReservationService;
-import com.back.service.IRoomService;
-
+import com.back.repo.*;
+import com.back.service.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReservationServiceImpl extends CRUDImpl<Reservation, Integer> implements IReservationService {
+public class ReservationServiceImpl
+        extends CRUDImpl<Reservation, Integer>
+        implements IReservationService {
 
     private final IReservationRepo repo;
     private final IRoomRepo roomRepo;
@@ -33,7 +32,15 @@ public class ReservationServiceImpl extends CRUDImpl<Reservation, Integer> imple
     protected IGenericRepo<Reservation, Integer> getRepo() {
         return repo;
     }
-    
+    @Override
+    public List<ReservasPorFechaDTO> getReservasAgrupadasPorFecha(Integer entrepreneurId) {
+        List<Object[]> raw = repo.countReservasPorFecha(entrepreneurId);
+
+        return raw.stream()
+                .map(obj -> new ReservasPorFechaDTO((LocalDate) obj[0], (Long) obj[1]))
+                .toList();
+    }
+
     @Override
     @Transactional
     public Reservation save(Reservation reservation) throws Exception {
@@ -42,156 +49,140 @@ public class ReservationServiceImpl extends CRUDImpl<Reservation, Integer> imple
         Room room = roomRepo.findById(reservation.getRoomId())
                 .orElseThrow(() -> new ModelNotFoundException("Room not found"));
 
-        List<Reservation> conflictingReservations = repo.findByRoomIdAndDateRange(
-            reservation.getRoomId(), 
-            reservation.getCheckInDate(), 
-            reservation.getCheckOutDate()
+        List<Reservation> conflicts = repo.findByRoomIdAndDateRange(
+                reservation.getRoomId(),
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate()
         );
-
-        if (!conflictingReservations.isEmpty()) {
-            throw new IllegalArgumentException("Room is already reserved for the selected dates");
+        if (!conflicts.isEmpty()) {
+            throw new IllegalArgumentException("Room already reserved for those dates");
         }
 
-        Reservation savedReservation = getRepo().save(reservation);
+        // Calcular totalPrice = price * noches
+        long nights = ChronoUnit.DAYS.between(
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate()
+        );
+        BigDecimal total = room.getPrice().multiply(BigDecimal.valueOf(nights));
+        reservation.setTotalPrice(total);
 
-        // Solo marcar como no disponible si la reserva es desde hoy en adelante
+        Reservation saved = repo.save(reservation);
+
+        // Si la reserva comienza hoy o antes, marcar no disponible
         if (!reservation.getCheckInDate().isAfter(LocalDate.now())) {
             roomService.updateAvailability(room.getIdRoom(), false);
         }
 
-        log.info("New reservation created - Room: {}, Customer: {}, Check-in: {}, Check-out: {}", 
-            room.getNumber(), 
-            reservation.getCustomerName(), 
-            reservation.getCheckInDate(), 
-            reservation.getCheckOutDate()
+        log.info("New reservation: room={}, customer={}, checkIn={}, checkOut={}",
+                room.getNumber(),
+                reservation.getCustomerName(),
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate()
         );
 
-        return getRepo().save(reservation);
+        return saved;
     }
 
     @Override
     @Transactional
     public Reservation update(Reservation reservation, Integer id) throws Exception {
-        Reservation existingReservation = repo.findById(id)
-            .orElseThrow(() -> new ModelNotFoundException("Reservation not found"));
-
         validateReservationDates(reservation);
 
-        List<Reservation> conflictingReservations = repo.findByRoomIdAndDateRange(
-            reservation.getRoomId(), 
-            reservation.getCheckInDate(), 
-            reservation.getCheckOutDate()
+        Reservation existing = repo.findById(id)
+                .orElseThrow(() -> new ModelNotFoundException("Reservation not found"));
+
+        List<Reservation> conflicts = repo.findByRoomIdAndDateRange(
+                reservation.getRoomId(),
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate()
         );
-
-        // Filter out the current reservation from conflicts
-        conflictingReservations.removeIf(r -> r.getIdReservation().equals(id));
-
-        if (!conflictingReservations.isEmpty()) {
-            throw new IllegalArgumentException("Room is already reserved for the selected dates");
+        conflicts.removeIf(r -> r.getIdReservation().equals(id));
+        if (!conflicts.isEmpty()) {
+            throw new IllegalArgumentException("Room already reserved for those dates");
         }
 
-        // 4. Update reservation
-        reservation.setIdReservation(id);
-        Reservation updatedReservation = repo.save(reservation);
-
-        // 5. Log update details
-        log.info("Reservation updated - ID: {}, Room: {}, Customer: {}, Check-in: {}, Check-out: {}", 
-            id, 
-            reservation.getRoomId(), 
-            reservation.getCustomerName(), 
-            reservation.getCheckInDate(), 
-            reservation.getCheckOutDate()
+        // Recalcular precio si cambian fechas
+        Room room = roomRepo.findById(reservation.getRoomId())
+                .orElseThrow(() -> new ModelNotFoundException("Room not found"));
+        long nights = ChronoUnit.DAYS.between(
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate()
         );
+        reservation.setTotalPrice(room.getPrice().multiply(BigDecimal.valueOf(nights)));
 
-        return updatedReservation;
+        reservation.setIdReservation(id);
+        Reservation updated = repo.save(reservation);
+
+        log.info("Updated reservation {}: room={}, customer={}",
+                id, reservation.getRoomId(), reservation.getCustomerName()
+        );
+        return updated;
     }
 
     @Override
     @Transactional
     public void delete(Integer id) throws Exception {
-        // 1. Find the reservation
-        Reservation reservation = repo.findById(id)
-            .orElseThrow(() -> new ModelNotFoundException("Reservation not found"));
-
-        // 2. Delete the reservation
+        Reservation res = repo.findById(id)
+                .orElseThrow(() -> new ModelNotFoundException("Reservation not found"));
         repo.deleteById(id);
 
-        // 3. Check if the room has any other active reservations
-        List<Reservation> roomReservations = repo.findByRoomIdAndDateRange(
-            reservation.getRoomId(), 
-            LocalDate.now(), 
-            LocalDate.now().plusYears(1)
+        // Si ya no hay reservas activas, liberar cuarto
+        List<Reservation> active = repo.findByRoomIdAndDateRange(
+                res.getRoomId(),
+                LocalDate.now(),
+                LocalDate.now().plusYears(1)
         );
-
-        // 4. Update room availability if no active reservations
-        if (roomReservations.isEmpty()) {
-            roomService.updateAvailability(reservation.getRoomId(), true);
+        if (active.isEmpty()) {
+            roomService.updateAvailability(res.getRoomId(), true);
         }
 
-        // 5. Log deletion
-        log.info("Reservation deleted - ID: {}, Room: {}, Customer: {}", 
-            id, 
-            reservation.getRoomId(), 
-            reservation.getCustomerName()
-        );
+        log.info("Deleted reservation {} for room {}", id, res.getRoomId());
     }
 
-    /**
-     * Validate reservation dates
-     * @param reservation Reservation to validate
-     * @throws IllegalArgumentException if dates are invalid
-     */
-    private void validateReservationDates(Reservation reservation) {
-        // Validate check-out date is after check-in date
-        if (reservation.getCheckOutDate().isBefore(reservation.getCheckInDate())) {
-            throw new IllegalArgumentException("Check-out date must be after check-in date");
-        }
+    // Métricas para dashboard
+    @Override
+    public Long countByEntrepreneur(Integer entrepreneurId) {
+        return repo.countByEntrepreneurId(entrepreneurId);
+    }
 
-        // Optional: Prevent reservations in the past
-        if (reservation.getCheckInDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Check-in date cannot be in the past");
+    @Override
+    public Long countActiveByEntrepreneur(Integer entrepreneurId) {
+        return repo.countActiveByEntrepreneurId(entrepreneurId);
+    }
+
+    @Override
+    public BigDecimal sumRevenueByEntrepreneur(Integer entrepreneurId) {
+        return repo.sumRevenueByEntrepreneurId(entrepreneurId);
+    }
+
+    private void validateReservationDates(Reservation res) {
+        if (res.getCheckOutDate().isBefore(res.getCheckInDate())) {
+            throw new IllegalArgumentException("Check-out must be after check-in");
+        }
+        if (res.getCheckInDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Check-in cannot be past date");
         }
     }
 
+    // Limpieza diaria y sincronización de availability
     @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void manageReservationsAndAvailability() {
         LocalDate today = LocalDate.now();
 
-        List<Reservation> pastReservations = repo.findByCheckOutDateBefore(today);
-        repo.deleteAll(pastReservations);
+        // Borrar pasadas
+        List<Reservation> past = repo.findByCheckOutDateBefore(today);
+        repo.deleteAll(past);
+        log.info("Deleted {} past reservations", past.size());
 
-        log.info("Deleted {} past reservations", pastReservations.size());
-
-        List<Room> rooms = roomRepo.findAll();
-        for (Room room : rooms) {
-            List<Reservation> activeReservations = repo.findByRoomIdAndDateRange(
-                room.getIdRoom(), 
-                today, 
-                today.plusDays(1)
-            );
-
-            boolean hasActiveReservation = activeReservations.stream()
-                .anyMatch(reservation -> 
-                    !reservation.getCheckOutDate().isBefore(today) && 
-                    !reservation.getCheckInDate().isAfter(today)
-                );
-
-            if (hasActiveReservation && room.getAvailable()) {
-                try {
-                    roomService.updateAvailability(room.getIdRoom(), false);
-                    log.info("Room {} marked as unavailable due to active reservation", room.getNumber());
-                } catch (Exception e) {
-                    log.error("Error updating room availability for room {}", room.getIdRoom(), e);
-                }
-            } else if (!hasActiveReservation && !room.getAvailable()) {
-                try {
-                    roomService.updateAvailability(room.getIdRoom(), true);
-                    log.info("Room {} marked as available", room.getNumber());
-                } catch (Exception e) {
-                    log.error("Error updating room availability for room {}", room.getIdRoom(), e);
-                }
+        // Revisar cada room
+        roomRepo.findAll().forEach(room -> {
+            boolean hasActive = repo.countActiveByEntrepreneurId(room.getEntrepreneurId()) > 0;
+            try {
+                roomService.updateAvailability(room.getIdRoom(), !hasActive);
+            } catch (Exception e) {
+                log.error("Error toggling availability for room {}", room.getIdRoom(), e);
             }
-        }
+        });
     }
 }
