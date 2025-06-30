@@ -1,4 +1,4 @@
-<h2>Bienvenido al panel de tu hotel 🏨</h2>
+<h2 class="welcome-title">Bienvenido al panel de tu hotel 🏨</h2>
 
 <div class="cards-container" *ngIf="stats as s; else loading">
   <div class="card kpi kpi-reservas">
@@ -28,14 +28,24 @@
   <div class="card kpi kpi-habs">
     <div class="icon">🛏️</div>
     <div class="content">
-      <h3>Habitaciones Activas</h3>
-      <p>{{ s.occupiedRooms }} / {{ s.totalRooms }}</p>
+      <h3>Habitaciones</h3>
+      <p>{{ s.occupiedRooms }} / {{ s.totalRooms }} ({{ s.totalRooms - s.occupiedRooms }} libres)</p>
     </div>
   </div>
 </div>
 
-<h3 style="margin-top:2rem;">📈 Reservas recientes</h3>
+<div class="card resumen-ingresos">
+  <h3>Resumen semanal</h3>
+  <p>Total: {{ stats?.totalRevenue | currency: 'USD' }}</p>
+  <p>Crecimiento: +12% respecto a semana anterior</p> <!-- ⚠️ Cálculo pendiente si lo quieres -->
+</div>
+
+<h3 class="section-title">💸 Ingresos recientes</h3>
+<app-grafico-reservas [labels]="ingresoLabels" [data]="ingresoSeries" />
+
+<h3 class="section-title">📈 Reservas recientes</h3>
 <app-grafico-reservas [labels]="labels" [data]="series" />
+
 <ng-template #loading>
-  <p>Cargando estadísticas...</p>
+  <p class="loading-text">Cargando estadísticas...</p>
 </ng-template>

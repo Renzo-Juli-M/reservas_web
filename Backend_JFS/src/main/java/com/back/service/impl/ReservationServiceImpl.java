@@ -1,5 +1,6 @@
 package com.back.service.impl;
 
+import com.back.dto.IngresosPorFechaDTO;
 import com.back.dto.ReservasPorFechaDTO;
 import com.back.exception.ModelNotFoundException;
 import com.back.model.Reservation;
@@ -13,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -37,10 +39,16 @@ public class ReservationServiceImpl
         List<Object[]> raw = repo.countReservasPorFecha(entrepreneurId);
 
         return raw.stream()
-                .map(obj -> new ReservasPorFechaDTO((LocalDate) obj[0], (Long) obj[1]))
+                .map(obj -> new ReservasPorFechaDTO((java.sql.Date) obj[0], (Long) obj[1]))
                 .toList();
     }
-
+    @Override
+    public List<IngresosPorFechaDTO> getIngresosAgrupados(Integer entrepreneurId) {
+        List<Object[]> raw = repo.sumIngresosPorFecha(entrepreneurId);
+        return raw.stream()
+                .map(obj -> new IngresosPorFechaDTO((Date) obj[0], (BigDecimal) obj[1]))
+                .toList();
+    }
     @Override
     @Transactional
     public Reservation save(Reservation reservation) throws Exception {

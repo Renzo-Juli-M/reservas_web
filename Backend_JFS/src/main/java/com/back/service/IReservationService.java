@@ -1,5 +1,6 @@
 package com.back.service;
 
+import com.back.dto.IngresosPorFechaDTO;
 import com.back.dto.ReservasPorFechaDTO;
 import com.back.model.Reservation;
 import java.math.BigDecimal;
@@ -12,4 +13,5 @@ public interface IReservationService extends ICRUD<Reservation, Integer> {
     Long countActiveByEntrepreneur(Integer entrepreneurId);
     BigDecimal sumRevenueByEntrepreneur(Integer entrepreneurId);
     List<ReservasPorFechaDTO> getReservasAgrupadasPorFecha(Integer entrepreneurId);
+    List<IngresosPorFechaDTO> getIngresosAgrupados(Integer entrepreneurId);
 }

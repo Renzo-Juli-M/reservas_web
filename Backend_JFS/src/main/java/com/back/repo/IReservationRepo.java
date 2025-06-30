@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import jakarta.transaction.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,17 +31,25 @@ public interface IReservationRepo extends IGenericRepo<Reservation, Integer> {
 	List<Reservation> findByCheckOutDateBefore(LocalDate date);
 
 	// —— MÉTRICAS DASHBOARD ——
+
 	@Query("SELECT COUNT(r) FROM Reservation r WHERE r.entrepreneurId = :eid")
 	Long countByEntrepreneurId(@Param("eid") Integer eid);
 
 	@Query(value = "SELECT r.check_in_date, COUNT(*) " +
 			"FROM app_back.reservation r " +
 			"WHERE r.entrepreneur_id = :eid " +
-			"AND r.check_in_date >= DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY)	 " +
 			"GROUP BY r.check_in_date " +
 			"ORDER BY r.check_in_date ASC",
 			nativeQuery = true)
 	List<Object[]> countReservasPorFecha(@Param("eid") Integer eid);
+
+	@Query(value = "SELECT r.check_in_date, SUM(r.total_price) " +
+			"FROM app_back.reservation r " +
+			"WHERE r.entrepreneur_id = :eid " +
+			"GROUP BY r.check_in_date " +
+			"ORDER BY r.check_in_date ASC",
+			nativeQuery = true)
+	List<Object[]> sumIngresosPorFecha(@Param("eid") Integer eid);
 
 	@Query("SELECT COUNT(r) FROM Reservation r " +
 			"WHERE r.entrepreneurId = :eid " +

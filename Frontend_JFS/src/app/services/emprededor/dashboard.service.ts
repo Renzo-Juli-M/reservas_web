@@ -14,6 +14,12 @@ export interface ReservasPorFechaDTO {
   fecha: string;
   total: number;
 }
+export interface IngresosPorFechaDTO {
+  fecha: string;
+  ingresoTotal: number;
+}
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +32,9 @@ export class DashboardService {
 
   getStats(entrepreneurId: number): Observable<DashboardStatsDTO> {
     return this.http.get<DashboardStatsDTO>(`${this.apiUrl}/${entrepreneurId}/dashboard`);
+  }
+  getIngresosPorFecha(id: number): Observable<IngresosPorFechaDTO[]> {
+    return this.http.get<IngresosPorFechaDTO[]>(`${this.apiUrl}/${id}/ingresos-diaria`);
   }
 
   getReservasPorFecha(entrepreneurId: number): Observable<ReservasPorFechaDTO[]> {

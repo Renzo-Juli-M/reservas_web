@@ -8,6 +8,6 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class ReservasPorFechaDTO {
-    private LocalDate fecha;
+    private java.sql.Date fecha;
     private Long total;
 }

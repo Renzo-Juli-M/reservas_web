@@ -1,9 +1,6 @@
 package com.back.controller;
 
-import com.back.dto.DashboardStatsDTO;
-import com.back.dto.ReservasPorFechaDTO;
-import com.back.dto.ReservationDTO;
-import com.back.dto.RoomDTO;
+import com.back.dto.*;
 import com.back.model.Reservation;
 import com.back.model.Room;
 import com.back.service.IReservationService;
@@ -35,6 +32,12 @@ public class EntrepreneurController {
                 mapperUtil.mapList(list, RoomDTO.class, "roomMapper")
         );
     }
+
+    @GetMapping("/{id}/ingresos-diaria")
+    public ResponseEntity<List<IngresosPorFechaDTO>> getIngresosDiarios(@PathVariable Integer id) {
+        return ResponseEntity.ok(reservationService.getIngresosAgrupados(id));
+    }
+
     @GetMapping("/{id}/reservas-diaria")
     public ResponseEntity<List<ReservasPorFechaDTO>> getReservasDiarias(
             @PathVariable Integer id) {

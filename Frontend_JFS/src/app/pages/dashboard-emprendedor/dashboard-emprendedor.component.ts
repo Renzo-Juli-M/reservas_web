@@ -23,6 +23,10 @@ export class DashboardEmprendedorComponent implements OnInit {
   labels: string[] = [];
   series: number[] = [];
 
+  ingresoLabels: string[] = [];
+  ingresoSeries: number[] = [];
+
+
   constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
@@ -33,6 +37,11 @@ export class DashboardEmprendedorComponent implements OnInit {
     this.dashboardService.getReservasPorFecha(this.entrepreneurId).subscribe(datos => {
       this.labels = datos.map(d => this.formatearFecha(d.fecha));
       this.series = datos.map(d => d.total);
+    });
+
+    this.dashboardService.getIngresosPorFecha(this.entrepreneurId).subscribe(datos => {
+      this.ingresoLabels = datos.map(d => this.formatearFecha(d.fecha));
+      this.ingresoSeries = datos.map(d => Number(d.ingresoTotal));
     });
   }
 

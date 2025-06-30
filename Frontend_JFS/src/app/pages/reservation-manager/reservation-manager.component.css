@@ -1,0 +1,104 @@
+/* Estilo para la barra de herramientas */
+.mat-toolbar {
+  background-color: #cfb2f8; /* Color principal morado */
+}
+
+.toolbar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+/* Estilo para la tarjeta principal */
+.main-card {
+  margin-top: 2rem;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Contenedor de carga */
+.loading-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Estado vacío */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: #7f8c8d;
+}
+
+.empty-state mat-icon {
+  font-size: 4rem;
+  color: #7f8c8d;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Estilos de la tabla */
+.reservations-table {
+  width: 100%;
+  margin-top: 2rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: #fafafa;
+}
+
+th.mat-header-cell {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #333;
+}
+
+td.mat-cell {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Colores de los botones */
+button.mat-raised-button {
+  background-color: #ff9800; /* Naranja */
+  color: white;
+}
+
+button.mat-icon-button {
+  background-color: #e57373;
+}
+
+button.mat-icon-button:hover {
+  background-color: #c62828;
+}
+
+/* Estilo para las filas de la tabla al pasar el mouse */
+tr.mat-row:hover {
+  background-color: #e0e0e0;
+}
+
+tr.mat-header-row {
+  background-color: #00eaea;
+  color: white;
+}
+
+.mat-column-actions mat-icon {
+  color: #e57373;
+}
+
+.mat-column-actions mat-icon:hover {
+  color: #c62828;
+}
+
+/* Ajuste de iconos */
+.mat-icon {
+  font-size: 1.5rem;
+  vertical-align: middle;
+  margin-right: 8px;
+}
