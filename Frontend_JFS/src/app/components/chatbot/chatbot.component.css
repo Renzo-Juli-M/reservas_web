@@ -1,0 +1,32 @@
+.chat-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.chat-message {
+  margin: 5px 0;
+}
+.chat-message.user {
+  text-align: right;
+  color: blue;
+}
+.chat-message.bot {
+  text-align: left;
+  color: green;
+}
+.chat-input {
+  display: flex;
+  margin-top: 10px;
+}
+.chat-input input {
+  flex: 1;
+  padding: 6px;
+}
+.chat-input button {
+  padding: 6px 12px;
+}
+.chat-message.bot {
+  background-color: #f0fdf4;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+}
