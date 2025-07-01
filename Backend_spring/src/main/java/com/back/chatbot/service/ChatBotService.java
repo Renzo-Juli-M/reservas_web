@@ -30,37 +30,55 @@ public class ChatBotService {
 
     public record BotResponse(String message, RoomDTO roomReserved) {}
 
-    public BotResponse processMessage(String input) throws Exception {
+    public BotResponse processMessage(String input) {
         String sessionId = "demo-session";
         ChatSessionState state = sessions.getOrDefault(sessionId, new ChatSessionState());
+        sessions.put(sessionId, state);
 
-        // Paso 1: Nombre del cliente → mostrar lista de habitaciones
-        if (state.getCustomerName() == null) {
-            state.setCustomerName(input);
-            sessions.put(sessionId, state);
+        input = input.trim().toLowerCase();
 
-            List<Room> disponibles = roomService.findAll().stream()
-                    .filter(Room::getAvailable)
-                    .toList();
-
-            if (disponibles.isEmpty()) {
-                return new BotResponse("Lo siento, no hay habitaciones disponibles por ahora.", null);
+        // 🗣️ Paso 0: Esperar intención del usuario
+        if (!state.isEsperandoNombre() && state.getCustomerName() == null) {
+            if (input.contains("habitacion") || input.contains("reserva") || input.contains("quiero") || input.contains("me gustaría")) {
+                state.setEsperandoNombre(true);
+                return new BotResponse("¡Genial! ¿Podrías decirme tu nombre para comenzar?", null);
+            } else {
+                return new BotResponse("Hola 👋 Soy tu asistente. Si deseas ver habitaciones disponibles, solo dilo 😊", null);
             }
-
-            state.setHabitacionesDisponibles(disponibles);
-
-            String lista = IntStream.range(0, disponibles.size())
-                    .mapToObj(i -> (i + 1) + ". " + disponibles.get(i).getNumber() + " - " + disponibles.get(i).getType() + " - S/. " + disponibles.get(i).getPrice())
-                    .collect(Collectors.joining("<br>"));
-
-            return new BotResponse("Gracias, " + input + ". Estas son las habitaciones disponibles:<br>" +
-                    lista + "<br>Escribe el número de la habitación que deseas reservar (ej. 1, 2, 3...).", null);
         }
 
-        // Paso 2: Seleccionar habitación por índice
+        // 🙋 Paso 1: Guardar nombre del cliente y mostrar lista
+        if (state.isEsperandoNombre() && state.getCustomerName() == null) {
+            state.setCustomerName(input);
+            state.setEsperandoNombre(false);
+
+            try {
+                List<Room> disponibles = roomService.findAll().stream()
+                        .filter(Room::getAvailable)
+                        .toList();
+
+                if (disponibles.isEmpty()) {
+                    return new BotResponse("Lo siento, no hay habitaciones disponibles por ahora. ¿Te gustaría hacer una consulta más tarde?", null);
+                }
+
+                state.setHabitacionesDisponibles(disponibles);
+
+                String lista = IntStream.range(0, disponibles.size())
+                        .mapToObj(i -> (i + 1) + ". " + disponibles.get(i).getNumber() + " - " + disponibles.get(i).getType() + " - S/. " + disponibles.get(i).getPrice())
+                        .collect(Collectors.joining("<br>"));
+
+                return new BotResponse("Gracias, " + input + ". Estas son las habitaciones disponibles:<br>" +
+                        lista + "<br>Escribe el número de la habitación que deseas reservar (ej. 1, 2, 3...).", null);
+
+            } catch (Exception e) {
+                return new BotResponse("Hubo un problema al obtener las habitaciones. Por favor intenta más tarde.", null);
+            }
+        }
+
+        // 🛏️ Paso 2: Seleccionar habitación
         if (state.getHabitacionSeleccionada() == null) {
             try {
-                int index = Integer.parseInt(input.trim()) - 1;
+                int index = Integer.parseInt(input) - 1;
                 List<Room> disponibles = state.getHabitacionesDisponibles();
 
                 if (index < 0 || index >= disponibles.size()) {
@@ -76,20 +94,20 @@ public class ChatBotService {
             }
         }
 
-        // Paso 3: Fecha de ingreso
+        // 🗓️ Paso 3: Fecha de ingreso
         if (state.getCheckIn() == null) {
             try {
-                state.setCheckIn(parseFechaFlexible(input.trim()));
+                state.setCheckIn(parseFechaFlexible(input));
                 return new BotResponse("¿Y la fecha de salida?", null);
             } catch (Exception e) {
                 return new BotResponse("Formato incorrecto. Usa YYYY-MM-DD o DD/MM/YYYY.", null);
             }
         }
 
-        // Paso 4: Fecha de salida + crear reserva
+        // 🎉 Paso 4: Fecha de salida + crear reserva
         if (state.getCheckOut() == null) {
             try {
-                state.setCheckOut(parseFechaFlexible(input.trim()));
+                state.setCheckOut(parseFechaFlexible(input));
                 Room room = state.getHabitacionSeleccionada();
 
                 ReservationDTO reserva = new ReservationDTO(

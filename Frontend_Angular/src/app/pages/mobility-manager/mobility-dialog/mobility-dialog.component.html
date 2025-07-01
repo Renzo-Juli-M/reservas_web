@@ -1,0 +1,33 @@
+<mat-dialog-content>
+  <mat-toolbar>
+    <span>Nueva Unidad de Movilidad</span>
+  </mat-toolbar>
+
+  <div class="mobility-dialog-container">
+    <mat-form-field>
+      <mat-label>Placa</mat-label>
+      <input matInput placeholder="ABC-123" [(ngModel)]="mobility.plate" [ngClass]="{'invalid': !mobility.plate}">
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Tipo</mat-label>
+      <mat-select [(ngModel)]="mobility.type">
+        @for (t of mobilityTypes; track t) {
+          <mat-option [value]="t">{{ t }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Capacidad</mat-label>
+      <input matInput type="number" [(ngModel)]="mobility.capacity">
+    </mat-form-field>
+
+    <mat-slide-toggle [(ngModel)]="mobility.available">Disponible</mat-slide-toggle>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-button (click)="close()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="create()" [disabled]="!isFormValid()">Crear</button>
+  </div>
+</mat-dialog-content>

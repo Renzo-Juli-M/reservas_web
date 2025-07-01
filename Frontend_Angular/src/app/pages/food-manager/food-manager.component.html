@@ -1,0 +1,61 @@
+<div class="container">
+  <mat-toolbar color="primary">
+    <div fxLayout="row" fxLayoutAlign="space-between center" style="width: 100%;">
+      <span>Administrador de Alimentos</span>
+      <button mat-raised-button color="accent" (click)="openDialog()">
+        <mat-icon>add</mat-icon> Nuevo Alimento
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <mat-card class="main-card">
+    <mat-card-content>
+      @if (isLoading) {
+        <div class="loading-center">
+          <mat-spinner diameter="50"></mat-spinner>
+        </div>
+      } @else if (foods.length === 0) {
+        <div class="empty-state">
+          <mat-icon>restaurant</mat-icon>
+          <h3>No hay alimentos registrados</h3>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="dataSource" matSort class="food-table">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="name">Nombre</th>
+            <td mat-cell *matCellDef="let food">{{ food.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="price">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="price">Precio</th>
+            <td mat-cell *matCellDef="let food">{{ food.price | currency }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="available">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="available">Disponible</th>
+            <td mat-cell *matCellDef="let food">
+              <mat-slide-toggle
+                [checked]="food.available"
+                (change)="toggleAvailability(food)"
+                color="primary">
+                {{ food.available ? 'Sí' : 'No' }}
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Eliminar</th>
+            <td mat-cell *matCellDef="let food">
+              <button mat-icon-button color="warn" (click)="deleteFood(food.idFood)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

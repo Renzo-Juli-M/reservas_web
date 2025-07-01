@@ -1,0 +1,66 @@
+<div class="container">
+  <mat-toolbar color="primary">
+    <div fxLayout="row" fxLayoutAlign="space-between center" style="width: 100%;">
+      <span>Administrador de Movilidad</span>
+      <button mat-raised-button color="accent" (click)="openDialog()">
+        <mat-icon>add</mat-icon> Nueva Unidad
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <mat-card class="main-card">
+    <mat-card-content>
+      @if (isLoading) {
+        <div class="loading-center">
+          <mat-spinner diameter="50"></mat-spinner>
+        </div>
+      } @else if (mobilityList.length === 0) {
+        <div class="empty-state">
+          <mat-icon>local_shipping</mat-icon>
+          <h3>No hay unidades registradas</h3>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="dataSource" matSort class="mobility-table">
+          <ng-container matColumnDef="plate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="plate">Placa</th>
+            <td mat-cell *matCellDef="let m">{{ m.plate }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="type">Tipo</th>
+            <td mat-cell *matCellDef="let m">{{ m.type }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="capacity">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="capacity">Capacidad</th>
+            <td mat-cell *matCellDef="let m">{{ m.capacity }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="available">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="available">Disponible</th>
+            <td mat-cell *matCellDef="let m">
+              <mat-slide-toggle
+                [checked]="m.available"
+                (change)="toggleAvailability(m)"
+                color="primary">
+                {{ m.available ? 'Sí' : 'No' }}
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Eliminar</th>
+            <td mat-cell *matCellDef="let m">
+              <button mat-icon-button color="warn" (click)="deleteMobility(m.idMobility)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

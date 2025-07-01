@@ -1,0 +1,32 @@
+<mat-dialog-content>
+  <mat-toolbar>
+    <span>Nuevo Alimento</span>
+  </mat-toolbar>
+
+  <div class="food-dialog-container">
+    <mat-form-field>
+      <mat-label>Nombre</mat-label>
+      <input matInput placeholder="Ej. Hamburguesa" [(ngModel)]="food.name" [ngClass]="{'invalid': !food.name}">
+      @if (!food.name) {
+        <mat-error>El nombre es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Precio</mat-label>
+      <input matInput type="number" [(ngModel)]="food.price" [ngClass]="{'invalid': food.price <= 0}">
+      @if (food.price <= 0) {
+        <mat-error>Debe ser mayor que cero</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-slide-toggle [(ngModel)]="food.available">
+      Disponible
+    </mat-slide-toggle>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-button (click)="close()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="create()" [disabled]="!isFormValid()">Crear</button>
+  </div>
+</mat-dialog-content>

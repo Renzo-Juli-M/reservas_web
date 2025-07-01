@@ -20,4 +20,6 @@ public class ChatSessionState {
 
     private List<Room> habitacionesDisponibles = new ArrayList<>();
     private Room habitacionSeleccionada;
+
+    private boolean esperandoNombre = false; // indica si ya pidió el nombre
 }
